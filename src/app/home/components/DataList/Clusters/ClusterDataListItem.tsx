@@ -39,7 +39,7 @@ const ClusterDataListItem = ({ dataList, isLoading, associatedPlans, migMeta, re
             <Button onClick={toggleOpen} variant="link">
               <PlusCircleIcon /> Add Cluster
             </Button>
-            <AddClusterModal isOpen={isOpen} onHandleClose={toggleOpen} />
+            <AddClusterModal isOpen={isOpen} onHandleClose={toggleOpen} mode={'add'} />
           </DataListAction>
         </DataListItemRow>
         <ClusterContent

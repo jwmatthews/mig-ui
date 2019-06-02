@@ -12,6 +12,7 @@ interface IProps {
   touched: any;
   checkConnection: () => void;
   onHandleModalToggle: () => void;
+  mode: string;
 }
 
 const CheckConnection: React.FunctionComponent<IProps> = ({
@@ -20,10 +21,12 @@ const CheckConnection: React.FunctionComponent<IProps> = ({
   errors,
   touched,
   onHandleModalToggle,
+  mode,
   ...props
 }) => {
   const errorsObj = Object.entries(errors).length === 0 && errors.constructor === Object;
   const touchedObj = Object.entries(touched).length === 0 && touched.constructor === Object;
+  const displayMode = (mode !== 'undefined' ) ? (mode.charAt(0).toUpperCase() + mode.substring(1)) : 'Add';
 
   return (
     <FormGroup fieldId="check-connection" id="check-connection">
@@ -50,7 +53,7 @@ const CheckConnection: React.FunctionComponent<IProps> = ({
             isDisabled={connectionState !== ConnectionState.Success}
             style={{ marginRight: '10px' }}
           >
-            Add
+            {displayMode}
           </Button>
           <Button key="cancel" variant="secondary" onClick={() => onHandleModalToggle()}>
             Cancel
