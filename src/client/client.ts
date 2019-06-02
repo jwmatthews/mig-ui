@@ -13,6 +13,7 @@ export class ClusterClient {
   private token: string;
   private apiRoot: string;
   private requester: AxiosInstance;
+  private patchRequester: AxiosInstance;
 
   constructor(apiRoot: string, token: string) {
     this.apiRoot = apiRoot;
@@ -25,6 +26,14 @@ export class ClusterClient {
       },
       responseType: 'json',
     });
+    this.patchRequester = axios.create({
+      baseURL: this.apiRoot,
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        'Content-Type': 'application/merge-patch+json',
+      },
+      responseType: 'json',
+    });
   }
 
   public list(resource: KubeResource): AxiosPromise<any> {
@@ -34,7 +43,7 @@ export class ClusterClient {
     return this.requester.get(resource.namedPath(name));
   }
   public patch(resource: KubeResource, name: string, patch: object): AxiosPromise<any> {
-    return this.requester.patch(resource.namedPath(name), patch);
+    return this.patchRequester.patch(resource.namedPath(name), patch);
   }
   public create(resource: KubeResource, newObject: object): AxiosPromise<any> {
     return this.requester.post(resource.listPath(), newObject);

@@ -14,6 +14,9 @@ import {
   createClusterRegistryObj,
   createTokenSecret,
   createMigCluster,
+  updateClusterRegistryObj,
+  updateTokenSecret,
+  updateMigCluster,
 } from '../../../client/resources/conversions';
 import { MigResource, MigResourceKind } from '../../../client/resources';
 
@@ -83,23 +86,12 @@ const updateCluster = clusterValues => {
       const { migMeta } = state;
       const client: IClusterClient = ClientFactory.hostCluster(state);
 
-      const clusterReg = createClusterRegistryObj(
-        clusterValues.name,
-        migMeta.namespace,
+      const clusterReg = updateClusterRegistryObj(
         clusterValues.url
       );
-      const tokenSecret = createTokenSecret(
-        clusterValues.name,
-        migMeta.configNamespace,
+      const tokenSecret = updateTokenSecret(
         clusterValues.token
       );
-      const migCluster = createMigCluster(
-        clusterValues.name,
-        migMeta.namespace,
-        clusterReg,
-        tokenSecret
-      );
-
       const clusterRegResource = new ClusterRegistryResource(
         ClusterRegistryResourceKind.Cluster,
         migMeta.namespace
@@ -108,19 +100,12 @@ const updateCluster = clusterValues => {
         CoreNamespacedResourceKind.Secret,
         migMeta.configNamespace
       );
-      const migClusterResource = new MigResource(MigResourceKind.MigCluster, migMeta.namespace);
 
       const arr = await Promise.all([
         client.patch(clusterRegResource, clusterValues.name, clusterReg),
         client.patch(secretResource, clusterValues.name, tokenSecret),
-        client.patch(migClusterResource, clusterValues.name, migCluster),
       ]);
-      const cluster = arr.reduce((accum, res) => {
-        accum[res.data.kind] = res.data;
-        return accum;
-      }, {});
-      cluster.status = clusterValues.connectionStatus;
-      dispatch(updateClusterSuccess(cluster));
+      dispatch(fetchClusters());
     } catch (err) {
       dispatch(AlertCreators.alertError(err));
     }
@@ -150,11 +135,6 @@ const removeCluster = id => {
         client.delete(migClusterResource, id),
       ]);
 
-      // TODO:  Unsure if both dispatches below are needed.
-      //        Do we want the removeClusterSuccess(id)
-      //        or is dispatch(fetchClusters()) sufficient?
-      //
-      dispatch(removeClusterSuccess(id));
       dispatch(fetchClusters());
     } catch (err) {
       dispatch(removeClusterFailure(err));
